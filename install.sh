@@ -31,10 +31,18 @@ if ! command -v gh >/dev/null 2>&1; then
     unzip -q -o "$TMP/gh.zip" -d "$TMP/gh" && cp "$(find "$TMP/gh" -name gh -type f | head -1)" "$BIN/gh" && chmod +x "$BIN/gh" || fail "Installation de GitHub CLI impossible."
     xattr -cr "$BIN/gh" 2>/dev/null
 fi
-if ! gh auth status >/dev/null 2>&1; then
-    say "Connexion a GitHub (le depot est prive)"
-    echo "Un code va s'afficher : copiez-le, appuyez sur Entree, puis collez-le dans la page qui s'ouvre."
-    gh auth login --hostname github.com --git-protocol https --web </dev/tty || fail "Connexion a GitHub impossible."
+if [ -z "${GH_TOKEN:-}" ] && ! gh auth status >/dev/null 2>&1; then
+    say "Acces a tes depots prives"
+    echo "Colle un jeton GitHub limite a tes depots (voir ci-dessous), ou laisse vide pour te connecter par le navigateur."
+    echo "  Jeton : github.com > Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token"
+    echo "  Proprietaire : ton compte perso (pas une organisation) | Depots : Audionide + boite-a-outils | Contents : Read-only"
+    printf "Jeton (rien ne s'affiche) : "; read -rs TOKEN </dev/tty; echo
+    if [ -n "$TOKEN" ]; then
+        export GH_TOKEN="$TOKEN"
+        gh api repos/Aynide-glitch/boite-a-outils --silent >/dev/null 2>&1 || fail "Ce jeton ne donne pas acces a Aynide-glitch/boite-a-outils (Contents: Read-only, depot ajoute ?)."
+    else
+        gh auth login --hostname github.com --git-protocol https --web </dev/tty || fail "Connexion a GitHub impossible."
+    fi
 fi
 gh auth setup-git >/dev/null 2>&1
 

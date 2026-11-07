@@ -28,12 +28,24 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
         if (Test-Path $gh) { $env:PATH = "$gh;$env:PATH" } else { Fail "GitHub CLI n'a pas pu etre installe." }
     }
 }
-gh auth status 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Say "Connexion a GitHub (le depot est prive)"
-    Write-Host "Un code va s'afficher : copiez-le, appuyez sur Entree, puis collez-le dans la page qui s'ouvre."
-    gh auth login --hostname github.com --git-protocol https --web
-    if ($LASTEXITCODE -ne 0) { Fail "Connexion a GitHub impossible." }
+if (-not $env:GH_TOKEN) {
+    gh auth status 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Say "Acces a tes depots prives"
+        Write-Host "Colle un jeton GitHub limite a tes depots, ou laisse vide pour te connecter par le navigateur."
+        Write-Host "  Jeton : github.com > Settings > Developer settings > Personal access tokens > Fine-grained tokens"
+        Write-Host "  Proprietaire : ton compte perso (pas une organisation) | Depots : Audionide + boite-a-outils | Contents : Read-only"
+        $secure = Read-Host "Jeton" -AsSecureString
+        $token = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure))
+        if ($token) {
+            $env:GH_TOKEN = $token
+            gh api repos/Aynide-glitch/boite-a-outils --silent 2>$null | Out-Null
+            if ($LASTEXITCODE -ne 0) { Fail "Ce jeton ne donne pas acces a Aynide-glitch/boite-a-outils (Contents: Read-only, depot ajoute ?)." }
+        } else {
+            gh auth login --hostname github.com --git-protocol https --web
+            if ($LASTEXITCODE -ne 0) { Fail "Connexion a GitHub impossible." }
+        }
+    }
 }
 gh auth setup-git 2>$null | Out-Null
 
