@@ -1,0 +1,5 @@
+# Programmes installes par l installateur (colonnes separees par des tabulations).
+# Pour ajouter un programme : ajouter une ligne ici, et publier le fichier sur le site (dossier site/ du depot).
+# id	nom affiche	depot GitHub (releases)	zip macOS	zip Windows	application macOS	programme Windows	options CMake si compilation locale
+boite-a-outils	Boîte à Outils	Aynide-glitch/boite-a-outils	BoiteAOutils-macOS.zip	BoiteAOutils-Windows.zip	BoiteAOutils.app	BoiteAOutils.exe	-DBAO_BUILD_TESTS=OFF
+audionide	Audionide	Aynide-glitch/Audionide	Audionide-macOS.zip	Audionide-Windows.zip	Audionide.app	Audionide.exe	-DAUDIONIDE_BUILD_TESTS=OFF
